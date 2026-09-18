@@ -94,6 +94,47 @@ export class AppFlowchart {
     }
   };
 
+  /**
+   * Creates one connected node from the currently selected flowchart node.
+   *
+   * The keyboard flow intentionally keeps nodes pending until the modifier is
+   * released. UI controls are discrete actions instead, so they commit the
+   * new node immediately as one undoable update.
+   */
+  createNode = (direction: LinkDirection): boolean => {
+    const selectedElements = getSelectedElements(
+      this.app.scene.getNonDeletedElementsMap(),
+      this.app.state,
+    );
+    const startNode = selectedElements[0];
+
+    if (
+      selectedElements.length !== 1 ||
+      !startNode ||
+      !isFlowchartNodeElement(startNode)
+    ) {
+      return false;
+    }
+
+    this.creator.createNodes(
+      startNode,
+      this.app.state,
+      direction,
+      this.app.scene,
+    );
+
+    const nodes = this.creator.pendingNodes ?? [];
+    this.creator.clear();
+    if (!nodes.length) {
+      return false;
+    }
+
+    this.app.insertNewElements(nodes);
+    this.selectAndReveal(nodes[0]);
+    this.captureUpdate();
+    return true;
+  };
+
   private resolveKeyboardEventToOperation(
     event: React.KeyboardEvent | KeyboardEvent,
   ): FlowchartOperation {
