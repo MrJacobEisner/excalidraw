@@ -7,6 +7,7 @@ import { Dialog } from "../Dialog";
 import { withInternalFallback } from "../hoc/withInternalFallback";
 
 import MermaidToExcalidraw from "./MermaidToExcalidraw";
+import FlowchartTemplates from "./FlowchartTemplates";
 import TextToDiagram from "./TextToDiagram";
 import TTDDialogTabs from "./TTDDialogTabs";
 import { TTDDialogTabTriggers } from "./TTDDialogTabTriggers";
@@ -53,7 +54,7 @@ const TTDDialogBase = withInternalFallback(
     tab,
     ...rest
   }: {
-    tab: "text-to-diagram" | "mermaid";
+    tab: "text-to-diagram" | "mermaid" | "templates";
   } & (
     | {
         onTextSubmit(
@@ -108,6 +109,9 @@ const TTDDialogBase = withInternalFallback(
               <TTDDialogTabTrigger tab="mermaid">
                 {t("mermaid.label")}
               </TTDDialogTabTrigger>
+              <TTDDialogTabTrigger tab="templates">
+                {t("flowchartTemplates.label")}
+              </TTDDialogTabTrigger>
             </TTDDialogTabTriggers>
           )}
 
@@ -126,6 +130,12 @@ const TTDDialogBase = withInternalFallback(
             <MermaidToExcalidraw
               mermaidToExcalidrawLib={mermaidToExcalidrawLib}
               isActive={tab === "mermaid"}
+            />
+          </TTDDialogTab>
+          <TTDDialogTab className="ttd-dialog-content" tab="templates">
+            <FlowchartTemplates
+              mermaidToExcalidrawLib={mermaidToExcalidrawLib}
+              isActive={tab === "templates"}
             />
           </TTDDialogTab>
         </TTDDialogTabs>
