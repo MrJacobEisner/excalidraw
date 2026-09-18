@@ -9,6 +9,7 @@ import {
   isStickyNoteElement,
   isTextBindableContainer,
   isTextElement,
+  type LinkDirection,
 } from "@excalidraw/element";
 
 import { isNodeInFlowchart } from "@excalidraw/element";
@@ -35,6 +36,42 @@ const getTaggedShortcutKey = (key: string | string[]) =>
   Array.isArray(key)
     ? `<kbd>${key.map(getShortcutKey).join(" + ")}</kbd>`
     : `<kbd>${getShortcutKey(key)}</kbd>`;
+
+const FLOWCHART_CONTROLS: readonly {
+  direction: LinkDirection;
+  symbol: string;
+  labelKey:
+    | "hints.flowchartAddAbove"
+    | "hints.flowchartAddBelow"
+    | "hints.flowchartAddLeft"
+    | "hints.flowchartAddRight";
+  shortcut: string;
+}[] = [
+  {
+    direction: "up",
+    symbol: "↑",
+    labelKey: "hints.flowchartAddAbove",
+    shortcut: "ArrowUp",
+  },
+  {
+    direction: "left",
+    symbol: "←",
+    labelKey: "hints.flowchartAddLeft",
+    shortcut: "ArrowLeft",
+  },
+  {
+    direction: "right",
+    symbol: "→",
+    labelKey: "hints.flowchartAddRight",
+    shortcut: "ArrowRight",
+  },
+  {
+    direction: "down",
+    symbol: "↓",
+    labelKey: "hints.flowchartAddBelow",
+    shortcut: "ArrowDown",
+  },
+];
 
 const getHints = ({
   appState,
@@ -284,6 +321,14 @@ export const HintViewer = ({
     return null;
   }
 
+  const selectedElements = app.scene.getSelectedElements(appState);
+  const showFlowchartControls =
+    appState.activeTool.type === "selection" &&
+    !appState.newElement &&
+    !appState.selectedElementsAreBeingDragged &&
+    selectedElements.length === 1 &&
+    isFlowchartNodeElement(selectedElements[0]);
+
   const hint = Array.isArray(hints)
     ? hints.map((hint) => hint.replace(/\. ?$/, "")).join(", ")
     : hints;
@@ -300,6 +345,35 @@ export const HintViewer = ({
   return (
     <div className="HintViewer">
       <span>{hintJSX}</span>
+      {showFlowchartControls && (
+        <div
+          className="HintViewer__flowchart-controls"
+          role="group"
+          aria-label={t("hints.flowchartControls")}
+        >
+          {FLOWCHART_CONTROLS.map(
+            ({ direction, symbol, labelKey, shortcut }) => {
+              const label = t(labelKey);
+              return (
+                <button
+                  key={direction}
+                  type="button"
+                  className="HintViewer__flowchart-control"
+                  aria-label={label}
+                  title={`${label} (${getShortcutKey(shortcut)})`}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    app.flowchart.createNode(direction);
+                  }}
+                >
+                  {symbol}
+                </button>
+              );
+            },
+          )}
+        </div>
+      )}
     </div>
   );
 };
