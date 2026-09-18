@@ -216,6 +216,7 @@ export const SelectedShapeActions = ({
             {predicates.link && renderAction("hyperlink")}
             {predicates.cropEditor && renderAction("cropEditor")}
             {predicates.lineEditor && renderAction("toggleLinearEditor")}
+            {renderAction("autoLayoutFlowchart")}
           </div>
         </fieldset>
       )}
@@ -577,6 +578,7 @@ const CombinedExtraActions = ({
                   {predicates.cropEditor && renderAction("cropEditor")}
                   {showDuplicate && renderAction("duplicateSelection")}
                   {showDelete && renderAction("deleteSelectedElements")}
+                  {renderAction("autoLayoutFlowchart")}
                 </div>
               </fieldset>
             </div>

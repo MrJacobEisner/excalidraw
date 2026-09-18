@@ -915,6 +915,22 @@ export const DistributeVerticallyIcon = createIcon(
   modifiedTablerIconProps,
 );
 
+export const AutoLayoutIcon = createIcon(
+  <g
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="1.25"
+  >
+    <rect x="7" y="1.75" width="6" height="4.5" rx="1" />
+    <rect x="1.75" y="13.75" width="6" height="4.5" rx="1" />
+    <rect x="12.25" y="13.75" width="6" height="4.5" rx="1" />
+    <path d="M10 6.25v3.5M10 9.75H4.75v4M10 9.75h5.25v4" />
+  </g>,
+  modifiedTablerIconProps,
+);
+
 export const CenterVerticallyIcon = createIcon(
   <g stroke="currentColor" strokeWidth="1.25">
     <path d="M1.667 10h2.916" strokeLinecap="round" strokeLinejoin="round" />
