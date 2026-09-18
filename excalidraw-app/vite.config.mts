@@ -142,7 +142,8 @@ export default defineConfig(({ mode }) => {
       woff2BrowserPlugin(),
       react(),
       checker({
-        typescript: true,
+        // Low-memory previews can run checks separately from the dev server.
+        typescript: envVars.VITE_APP_ENABLE_TYPECHECK !== "false",
         eslint:
           envVars.VITE_APP_ENABLE_ESLINT === "false"
             ? undefined

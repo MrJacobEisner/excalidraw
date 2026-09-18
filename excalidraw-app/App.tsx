@@ -80,6 +80,7 @@ import type { ResolutionType } from "@excalidraw/common/utility-types";
 import type { ResolvablePromise } from "@excalidraw/common/utils";
 
 import CustomStats from "./CustomStats";
+import { FlowchartTool } from "./flowchart/FlowchartTool";
 import {
   Provider,
   useAtom,
@@ -1101,6 +1102,7 @@ const ExcalidrawWrapper = () => {
         />
 
         <AppSidebar />
+        {excalidrawAPI && <FlowchartTool excalidrawAPI={excalidrawAPI} />}
 
         {errorMessage && (
           <ErrorDialog onClose={() => setErrorMessage("")}>
