@@ -42,6 +42,7 @@ import {
   type NonDeleted,
   type ElementsMap,
   type ExcalidrawBindableElement,
+  type ExcalidrawArrowElement,
   type ExcalidrawElement,
   type ExcalidrawFlowchartNodeElement,
   type NonDeletedExcalidrawElement,
@@ -760,4 +761,163 @@ export const isNodeInFlowchart = (
   }
 
   return false;
+};
+
+export type FlowchartLayoutPosition = {
+  x: number;
+  y: number;
+};
+
+/**
+ * Computes a stable top-to-bottom layout for a selected flowchart graph.
+ *
+ * The graph is ranked from its roots using Kahn's algorithm. When a selection
+ * contains a cycle, the lexicographically first remaining node is treated as
+ * a root so layout always terminates. Nodes in each rank are packed into a
+ * centered lane, ordered by the average position of their predecessors. This
+ * keeps branches visually near their incoming edges while guaranteeing that
+ * nodes in a row do not overlap.
+ */
+export const getFlowchartLayout = (
+  nodes: readonly ExcalidrawFlowchartNodeElement[],
+  arrows: readonly ExcalidrawArrowElement[],
+  options?: {
+    horizontalGap?: number;
+    verticalGap?: number;
+  },
+): Map<ExcalidrawElement["id"], FlowchartLayoutPosition> => {
+  const horizontalGap = options?.horizontalGap ?? 100;
+  const verticalGap = options?.verticalGap ?? 100;
+  const nodeIds = new Set(nodes.map(({ id }) => id));
+  const sortedNodes = [...nodes].sort((a, b) => a.id.localeCompare(b.id));
+  const outgoing = new Map<string, Set<string>>();
+  const incoming = new Map<string, Set<string>>();
+  const indegree = new Map<string, number>();
+
+  for (const node of sortedNodes) {
+    outgoing.set(node.id, new Set());
+    incoming.set(node.id, new Set());
+    indegree.set(node.id, 0);
+  }
+
+  for (const arrow of arrows) {
+    const startId = arrow.startBinding?.elementId;
+    const endId = arrow.endBinding?.elementId;
+    if (
+      !startId ||
+      !endId ||
+      startId === endId ||
+      !nodeIds.has(startId) ||
+      !nodeIds.has(endId)
+    ) {
+      continue;
+    }
+
+    const neighbors = outgoing.get(startId)!;
+    if (!neighbors.has(endId)) {
+      neighbors.add(endId);
+      incoming.get(endId)!.add(startId);
+      indegree.set(endId, indegree.get(endId)! + 1);
+    }
+  }
+
+  const layers = new Map<string, number>();
+  const remaining = new Set(nodeIds);
+  const queue = sortedNodes
+    .filter((node) => indegree.get(node.id) === 0)
+    .map((node) => node.id);
+
+  while (remaining.size > 0) {
+    if (queue.length === 0) {
+      // Break cycles deterministically. This also handles disconnected cyclic
+      // components without changing the order of already-ranked nodes.
+      queue.push([...remaining].sort()[0]);
+    }
+
+    const nodeId = queue.shift()!;
+    if (!remaining.has(nodeId)) {
+      continue;
+    }
+
+    remaining.delete(nodeId);
+    const layer = layers.get(nodeId) ?? 0;
+    layers.set(nodeId, layer);
+
+    for (const neighborId of [...outgoing.get(nodeId)!].sort()) {
+      layers.set(neighborId, Math.max(layers.get(neighborId) ?? 0, layer + 1));
+      indegree.set(neighborId, indegree.get(neighborId)! - 1);
+      if (indegree.get(neighborId) === 0) {
+        queue.push(neighborId);
+      }
+    }
+  }
+
+  const nodesById = new Map(sortedNodes.map((node) => [node.id, node]));
+  const layerNumbers = [...new Set(layers.values())].sort((a, b) => a - b);
+  const nodesByLayer = new Map<number, string[]>();
+  for (const [nodeId, layer] of layers) {
+    nodesByLayer.set(layer, [...(nodesByLayer.get(layer) ?? []), nodeId]);
+  }
+
+  const minY = Math.min(...sortedNodes.map((node) => node.y));
+  const layerHeights = new Map(
+    layerNumbers.map((layer) => [
+      layer,
+      Math.max(
+        ...nodesByLayer
+          .get(layer)!
+          .map((nodeId) => nodesById.get(nodeId)!.height),
+      ),
+    ]),
+  );
+  const layerY = new Map<number, number>();
+  let nextY = minY;
+  for (const layer of layerNumbers) {
+    layerY.set(layer, nextY);
+    nextY += layerHeights.get(layer)! + verticalGap;
+  }
+
+  const positions = new Map<string, FlowchartLayoutPosition>();
+  const centerById = new Map<string, number>();
+  for (const layer of layerNumbers) {
+    const ids = nodesByLayer.get(layer)!;
+    const desiredCenters = ids.map((nodeId) => {
+      const node = nodesById.get(nodeId)!;
+      const predecessorCenters = [...incoming.get(nodeId)!]
+        .map((predecessorId) => centerById.get(predecessorId))
+        .filter((center): center is number => center !== undefined);
+
+      return {
+        nodeId,
+        desiredCenter:
+          predecessorCenters.length > 0
+            ? predecessorCenters.reduce((sum, center) => sum + center, 0) /
+              predecessorCenters.length
+            : node.x + node.width / 2,
+      };
+    });
+
+    desiredCenters.sort(
+      (a, b) =>
+        a.desiredCenter - b.desiredCenter || a.nodeId.localeCompare(b.nodeId),
+    );
+
+    const totalWidth =
+      ids.reduce((sum, nodeId) => sum + nodesById.get(nodeId)!.width, 0) +
+      Math.max(0, ids.length - 1) * horizontalGap;
+    const desiredLayerCenter =
+      desiredCenters.reduce((sum, item) => sum + item.desiredCenter, 0) /
+      desiredCenters.length;
+    let x = desiredLayerCenter - totalWidth / 2;
+
+    for (const { nodeId } of desiredCenters) {
+      const node = nodesById.get(nodeId)!;
+      const position = { x, y: layerY.get(layer)! };
+      positions.set(nodeId, position);
+      centerById.set(nodeId, x + node.width / 2);
+      x += node.width + horizontalGap;
+    }
+  }
+
+  return positions;
 };
