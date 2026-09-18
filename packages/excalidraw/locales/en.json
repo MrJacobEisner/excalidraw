@@ -657,6 +657,14 @@
       }
     }
   },
+  "flowchartTemplates": {
+    "label": "Templates",
+    "title": "Start with a flowchart template",
+    "description": "Choose a proven structure, then edit every shape and connector on the canvas.",
+    "hint": "All templates stay editable",
+    "preview": "Template preview",
+    "insert": "Insert template"
+  },
   "mermaid": {
     "title": "Mermaid to Excalidraw",
     "button": "Insert",
