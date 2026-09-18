@@ -1,4 +1,9 @@
-import { DefaultSidebar, Sidebar, THEME } from "@excalidraw/excalidraw";
+import {
+  DefaultSidebar,
+  Sidebar,
+  THEME,
+  useExcalidrawAPI,
+} from "@excalidraw/excalidraw";
 import {
   messageCircleIcon,
   presentationIcon,
@@ -7,6 +12,16 @@ import { LinkButton } from "@excalidraw/excalidraw/components/LinkButton";
 import { useUIAppState } from "@excalidraw/excalidraw/context/ui-appState";
 
 import "./AppSidebar.scss";
+
+import { FlowchartStudio } from "./FlowchartStudio";
+
+const flowchartIcon = (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="5" rx="1" />
+    <rect x="14" y="16" width="7" height="5" rx="1" />
+    <path d="M6.5 8v4h11v4M17.5 12v4" />
+  </svg>
+);
 
 type SidebarPromoCopyProps = {
   text: string;
@@ -67,10 +82,19 @@ const SidebarPromoCopy = (props: SidebarPromoCopyProps) => {
 
 export const AppSidebar = () => {
   const { theme, openSidebar } = useUIAppState();
+  const excalidrawAPI = useExcalidrawAPI();
 
   return (
     <DefaultSidebar>
       <DefaultSidebar.TabTriggers>
+        <Sidebar.TabTrigger
+          tab="flowchart"
+          title="Flowchart Studio"
+          aria-label="Open Flowchart Studio"
+          style={{ opacity: openSidebar?.tab === "flowchart" ? 1 : 0.4 }}
+        >
+          {flowchartIcon}
+        </Sidebar.TabTrigger>
         <Sidebar.TabTrigger
           tab="comments"
           style={{ opacity: openSidebar?.tab === "comments" ? 1 : 0.4 }}
@@ -84,6 +108,9 @@ export const AppSidebar = () => {
           {presentationIcon}
         </Sidebar.TabTrigger>
       </DefaultSidebar.TabTriggers>
+      <Sidebar.Tab tab="flowchart">
+        {excalidrawAPI && <FlowchartStudio excalidrawAPI={excalidrawAPI} />}
+      </Sidebar.Tab>
       <Sidebar.Tab tab="comments">
         <div className="app-sidebar-promo-container">
           <div
