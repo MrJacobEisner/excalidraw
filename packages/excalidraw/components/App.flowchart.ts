@@ -7,6 +7,8 @@ import {
   FlowChartNavigator,
   getSelectedElements,
   isFlowchartNodeElement,
+  addNewNodes,
+  type FlowchartNodeType,
   type LinkDirection,
 } from "@excalidraw/element";
 
@@ -48,6 +50,33 @@ export class AppFlowchart {
   clear = () => {
     this.creator.clear();
     this.navigator.clear();
+  };
+
+  addNode = (
+    startNode: NonDeletedExcalidrawElement,
+    direction: LinkDirection,
+    nodeType: FlowchartNodeType,
+  ) => {
+    if (!isFlowchartNodeElement(startNode)) {
+      return;
+    }
+
+    const { nodes } = addNewNodes(
+      startNode,
+      this.app.state,
+      direction,
+      this.app.scene,
+      1,
+      null,
+      nodeType,
+    );
+
+    this.app.insertNewElements(nodes);
+    const node = nodes.find((element) => element.type !== "arrow");
+    if (node) {
+      this.selectAndReveal(node);
+    }
+    this.captureUpdate();
   };
 
   handleKeyEvent = (event: React.KeyboardEvent | KeyboardEvent): boolean => {

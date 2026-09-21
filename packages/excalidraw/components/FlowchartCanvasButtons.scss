@@ -1,0 +1,23 @@
+.excalidraw {
+  .excalidraw-flowchart-canvas-buttons__group {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .excalidraw-flowchart-direction-icon {
+    display: inline-flex;
+    transform-origin: center;
+
+    &--up {
+      transform: rotate(-90deg);
+    }
+
+    &--down {
+      transform: rotate(90deg);
+    }
+
+    &--left {
+      transform: rotate(180deg);
+    }
+  }
+}

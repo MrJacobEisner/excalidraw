@@ -238,6 +238,7 @@ import {
   type ElementUpdate,
   hitElementBoundingBox,
   isLineElement,
+  isFlowchartNodeElement,
   isSimpleArrow,
   StoreDelta,
   type ApplyToOptions,
@@ -425,6 +426,7 @@ import {
   getViewportForZoomWithScrollConstraints,
 } from "../viewport";
 import { ElementCanvasButtons } from "../components/ElementCanvasButtons";
+import { FlowchartCanvasButtons } from "../components/FlowchartCanvasButtons";
 import { LaserTrails } from "../laserTrails";
 import { withBatchedUpdates, withBatchedUpdatesThrottled } from "../reactUtils";
 import { isPointHittingTextAutoResizeHandle } from "../textAutoResizeHandle";
@@ -2538,6 +2540,14 @@ class App extends React.Component<AppProps, AppState> {
                             ]}
                           />
                           {this.isDefaultUIEnabled() && <CursorHint />}
+                          {this.isDefaultUIEnabled() &&
+                            selectedElements.length === 1 &&
+                            isFlowchartNodeElement(firstSelectedElement) && (
+                              <FlowchartCanvasButtons
+                                element={firstSelectedElement}
+                                elementsMap={renderableElementsMap}
+                              />
+                            )}
                           {this.isDefaultUIEnabled() &&
                             selectedElements.length === 1 &&
                             this.state.openDialog?.name !==
