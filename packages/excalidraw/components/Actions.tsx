@@ -109,6 +109,7 @@ const AlignFieldset = ({
           </>
         )}
         {showDistribute && renderAction("distributeHorizontally")}
+        {renderAction("tidyFlowchart")}
         {/* breaks the row ˇˇ */}
         <div style={{ flexBasis: "100%", height: 0 }} />
         <div

@@ -74,6 +74,7 @@ export * from "./elbowArrow";
 export * from "./elementLink";
 export * from "./embeddable";
 export * from "./flowchart";
+export * from "./flowchartLayout";
 export * from "./arrows/focus";
 export * from "./fractionalIndex";
 export * from "./frame";
