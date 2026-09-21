@@ -66,6 +66,7 @@ export {
   distributeHorizontally,
   distributeVertically,
 } from "./actionDistribute";
+export { actionTidyFlowchart } from "./actionFlowchartLayout";
 
 export { actionFlipHorizontal, actionFlipVertical } from "./actionFlip";
 
