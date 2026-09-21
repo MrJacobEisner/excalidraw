@@ -42,6 +42,7 @@ import {
 } from "./App";
 import { LibraryMenuControlButtons } from "./LibraryMenuControlButtons";
 import LibraryMenuItems from "./LibraryMenuItems";
+import { FlowchartTemplates } from "./FlowchartTemplates";
 import Spinner from "./Spinner";
 
 import "./LibraryMenu.scss";
@@ -146,6 +147,7 @@ const LibraryMenuContent = memo(
 
     return (
       <LibraryMenuWrapper>
+        <FlowchartTemplates />
         <LibraryMenuItems
           isLoading={libraryItemsData.status === "loading"}
           libraryItems={libraryItems}
