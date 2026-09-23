@@ -34,6 +34,7 @@ import { aabbForElement } from "./bounds";
 import { elementsAreInFrameBounds, elementOverlapsWithFrame } from "./frame";
 import {
   isBindableElement,
+  isArrowElement,
   isElbowArrow,
   isFrameElement,
   isFlowchartNodeElement,
@@ -56,6 +57,7 @@ export type LinkDirection = "up" | "right" | "down" | "left";
 
 const VERTICAL_OFFSET = 100;
 const HORIZONTAL_OFFSET = 100;
+const FLOWCHART_LAYOUT_GAP = 100;
 
 type Interval = { start: number; end: number };
 
@@ -148,6 +150,176 @@ const getConnectedFlowchartNodes = (
   }
 
   return connected;
+};
+
+export type FlowchartLayoutPosition = {
+  x: number;
+  y: number;
+};
+
+/**
+ * Computes a tidy, directional layout for a selected flowchart subgraph.
+ *
+ * The layout deliberately only considers arrows whose two endpoints are in
+ * `selectedNodes`. This keeps unrelated shapes and the rest of a larger
+ * flowchart in place. Ranks are assigned with a breadth-first traversal
+ * instead of a topological sort, so a malformed or cyclic graph still gets a
+ * finite, deterministic layout.
+ */
+export const getFlowchartLayout = (
+  selectedNodes: readonly ExcalidrawFlowchartNodeElement[],
+  elementsMap: ElementsMap,
+): Map<ExcalidrawFlowchartNodeElement["id"], FlowchartLayoutPosition> => {
+  const selectedIds = new Set(selectedNodes.map(({ id }) => id));
+  const nodeById = new Map(selectedNodes.map((node) => [node.id, node]));
+  const edges: { from: string; to: string }[] = [];
+
+  for (const element of elementsMap.values()) {
+    if (
+      !isArrowElement(element) ||
+      !element.startBinding ||
+      !element.endBinding ||
+      !selectedIds.has(element.startBinding.elementId) ||
+      !selectedIds.has(element.endBinding.elementId)
+    ) {
+      continue;
+    }
+
+    edges.push({
+      from: element.startBinding.elementId,
+      to: element.endBinding.elementId,
+    });
+  }
+
+  if (selectedNodes.length < 2 || edges.length === 0) {
+    return new Map();
+  }
+
+  const outgoing = new Map<string, string[]>();
+  for (const edge of edges) {
+    const neighbors = outgoing.get(edge.from) ?? [];
+    neighbors.push(edge.to);
+    outgoing.set(edge.from, neighbors);
+  }
+
+  // Prefer the dominant direction already present in the arrows. Ties fall
+  // back to top-to-bottom, which is the least surprising flowchart default.
+  const directionScore = edges.reduce(
+    (score, { from, to }) => {
+      const source = nodeById.get(from)!;
+      const target = nodeById.get(to)!;
+      return {
+        horizontal:
+          score.horizontal +
+          Math.abs(target.x + target.width / 2 - (source.x + source.width / 2)),
+        vertical:
+          score.vertical + Math.abs(target.y + target.height / 2 - source.y),
+      };
+    },
+    { horizontal: 0, vertical: 0 },
+  );
+  const horizontal = directionScore.horizontal > directionScore.vertical;
+  const forward =
+    edges.reduce((score, { from, to }) => {
+      const source = nodeById.get(from)!;
+      const target = nodeById.get(to)!;
+      const delta = horizontal
+        ? target.x + target.width / 2 - source.x - source.width / 2
+        : target.y + target.height / 2 - source.y - source.height / 2;
+      return score + delta;
+    }, 0) >= 0;
+
+  const sortedNodes = [...selectedNodes].sort(
+    (a, b) => a.y - b.y || a.x - b.x || a.id.localeCompare(b.id),
+  );
+  const ranks = new Map<string, number>();
+  const queue: string[] = [];
+
+  // Starting a breadth-first traversal from every unvisited node handles
+  // multiple roots and ensures components made entirely of cycles are safe.
+  for (const node of sortedNodes) {
+    if (ranks.has(node.id)) {
+      continue;
+    }
+    ranks.set(node.id, 0);
+    queue.push(node.id);
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      const currentRank = ranks.get(current)!;
+      for (const next of outgoing.get(current) ?? []) {
+        if (ranks.has(next)) {
+          continue;
+        }
+        ranks.set(next, currentRank + 1);
+        queue.push(next);
+      }
+    }
+  }
+
+  const levels = new Map<number, ExcalidrawFlowchartNodeElement[]>();
+  for (const node of selectedNodes) {
+    const level = levels.get(ranks.get(node.id)!) ?? [];
+    level.push(node);
+    levels.set(ranks.get(node.id)!, level);
+  }
+
+  const primaryStart = horizontal
+    ? Math.min(...selectedNodes.map((node) => node.x))
+    : Math.min(...selectedNodes.map((node) => node.y));
+  const primaryEnd = horizontal
+    ? Math.max(...selectedNodes.map((node) => node.x + node.width))
+    : Math.max(...selectedNodes.map((node) => node.y + node.height));
+  const crossStart = horizontal
+    ? Math.min(...selectedNodes.map((node) => node.y))
+    : Math.min(...selectedNodes.map((node) => node.x));
+  const crossEnd = horizontal
+    ? Math.max(...selectedNodes.map((node) => node.y + node.height))
+    : Math.max(...selectedNodes.map((node) => node.x + node.width));
+
+  const levelSizes = [...levels.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([level, nodes]) => ({
+      level,
+      size: Math.max(
+        ...nodes.map((node) => (horizontal ? node.width : node.height)),
+      ),
+    }));
+  let primary = forward ? primaryStart : primaryEnd;
+  const center = (crossStart + crossEnd) / 2;
+  const layout = new Map<string, FlowchartLayoutPosition>();
+
+  for (const { level, size } of levelSizes) {
+    const nodes = levels
+      .get(level)!
+      .sort(
+        (a, b) =>
+          (horizontal ? a.y + a.height / 2 : a.x + a.width / 2) -
+            (horizontal ? b.y + b.height / 2 : b.x + b.width / 2) ||
+          a.id.localeCompare(b.id),
+      );
+    const crossLength =
+      nodes.reduce(
+        (total, node) => total + (horizontal ? node.height : node.width),
+        0,
+      ) +
+      Math.max(0, nodes.length - 1) * FLOWCHART_LAYOUT_GAP;
+    let cross = center - crossLength / 2;
+
+    for (const node of nodes) {
+      const nodeCrossSize = horizontal ? node.height : node.width;
+      const nodePrimaryStart = forward ? primary : primary - size;
+      const position = horizontal
+        ? { x: nodePrimaryStart, y: cross }
+        : { x: cross, y: nodePrimaryStart };
+      layout.set(node.id, position);
+      cross += nodeCrossSize + FLOWCHART_LAYOUT_GAP;
+    }
+
+    primary += (forward ? 1 : -1) * (size + FLOWCHART_LAYOUT_GAP);
+  }
+
+  return layout;
 };
 
 // Place a cluster of `count` equally-sized nodes next to `parent`:

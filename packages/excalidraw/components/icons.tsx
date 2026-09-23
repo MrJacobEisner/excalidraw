@@ -1848,6 +1848,21 @@ export const TextAlignMiddleIcon = React.memo(({ theme }: { theme: Theme }) =>
   ),
 );
 
+export const TidyFlowchartIcon = createIcon(
+  <g
+    stroke="currentColor"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="3" width="7" height="5" rx="1" />
+    <rect x="14" y="3" width="7" height="5" rx="1" />
+    <rect x="8.5" y="16" width="7" height="5" rx="1" />
+    <path d="M6.5 8v3h11V8M12 11v5" />
+  </g>,
+  tablerIconProps,
+);
+
 export const angleIcon = createIcon(
   <g>
     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
