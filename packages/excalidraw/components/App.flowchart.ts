@@ -5,13 +5,17 @@ import {
   CaptureUpdateAction,
   FlowChartCreator,
   FlowChartNavigator,
+  addNewNodes,
   getSelectedElements,
   isFlowchartNodeElement,
+  type FlowchartNodeType,
   type LinkDirection,
 } from "@excalidraw/element";
 
 import type {
   ExcalidrawElement,
+  ExcalidrawFlowchartNodeElement,
+  NonDeleted,
   NonDeletedExcalidrawElement,
 } from "@excalidraw/element/types";
 
@@ -48,6 +52,29 @@ export class AppFlowchart {
   clear = () => {
     this.creator.clear();
     this.navigator.clear();
+  };
+
+  addNode = (
+    startNode: NonDeleted<ExcalidrawFlowchartNodeElement>,
+    direction: LinkDirection,
+    nodeType: FlowchartNodeType,
+  ) => {
+    const { nodes } = addNewNodes(
+      startNode,
+      this.app.state,
+      direction,
+      this.app.scene,
+      1,
+      null,
+      nodeType,
+    );
+
+    this.app.insertNewElements(nodes);
+    const nextNode = nodes.find(isFlowchartNodeElement);
+    if (nextNode) {
+      this.selectAndReveal(nextNode);
+    }
+    this.captureUpdate();
   };
 
   handleKeyEvent = (event: React.KeyboardEvent | KeyboardEvent): boolean => {

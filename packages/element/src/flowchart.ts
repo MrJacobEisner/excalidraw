@@ -37,6 +37,7 @@ import {
   isElbowArrow,
   isFrameElement,
   isFlowchartNodeElement,
+  isStickyNoteElement,
 } from "./typeChecks";
 import {
   type NonDeleted,
@@ -53,6 +54,7 @@ import {
 import type { Scene } from "./Scene";
 
 export type LinkDirection = "up" | "right" | "down" | "left";
+export type FlowchartNodeType = "rectangle" | "diamond" | "ellipse";
 
 const VERTICAL_OFFSET = 100;
 const HORIZONTAL_OFFSET = 100;
@@ -233,6 +235,7 @@ const cloneFlowchartNode = (
   template: ExcalidrawFlowchartNodeElement,
   x: number,
   y: number,
+  type: ExcalidrawFlowchartNodeElement["type"] = template.type,
 ) => {
   const commonNodeProps = {
     x,
@@ -250,14 +253,16 @@ const cloneFlowchartNode = (
   };
 
   const node =
-    template.type === "stickynote"
+    type === "stickynote"
       ? newStickyNoteElement({
           type: "stickynote",
           ...commonNodeProps,
-          baseHeight: template.baseHeight,
+          baseHeight: isStickyNoteElement(template)
+            ? template.baseHeight
+            : template.height,
         })
       : newElement({
-          type: template.type,
+          type,
           ...commonNodeProps,
         });
 
@@ -276,6 +281,7 @@ export const addNewNodes = (
   scene: Scene,
   numberOfNodes: number,
   stickyCrossStart: number | null = null,
+  nodeType: ExcalidrawFlowchartNodeElement["type"] = startNode.type,
 ) => {
   const elementsMap = scene.getNonDeletedElementsMap();
   const obstacles = getConnectedFlowchartNodes(startNode, elementsMap).map(
@@ -292,7 +298,12 @@ export const addNewNodes = (
 
   const nodes: NonDeletedExcalidrawElement[] = [];
   for (const position of positions) {
-    const nextNode = cloneFlowchartNode(startNode, position.x, position.y);
+    const nextNode = cloneFlowchartNode(
+      startNode,
+      position.x,
+      position.y,
+      nodeType,
+    );
     const bindingArrow = createBindingArrow(
       startNode,
       nextNode,
