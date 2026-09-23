@@ -12,6 +12,7 @@ import { duplicateElements } from "@excalidraw/element";
 
 import clsx from "clsx";
 
+import { FLOWCHART_STARTER_ITEMS } from "../data/flowchartStarters";
 import { deburr } from "../deburr";
 
 import { useLibraryCache } from "../hooks/useLibraryItemSvg";
@@ -19,6 +20,7 @@ import { useScrollPosition } from "../hooks/useScrollPosition";
 import { t } from "../i18n";
 
 import { LibraryMenuControlButtons } from "./LibraryMenuControlButtons";
+import { FlowchartStarterPalette } from "./FlowchartStarterPalette";
 import { LibraryDropdownMenu } from "./LibraryMenuHeaderContent";
 import {
   LibraryMenuSection,
@@ -93,7 +95,10 @@ export default function LibraryMenuItems({
 
   const [searchInputValue, setSearchInputValue] = useState("");
 
-  const IS_LIBRARY_EMPTY = !libraryItems.length && !pendingElements.length;
+  const IS_LIBRARY_EMPTY =
+    !libraryItems.length &&
+    !pendingElements.length &&
+    !FLOWCHART_STARTER_ITEMS.length;
 
   const IS_SEARCHING = !IS_LIBRARY_EMPTY && !!searchInputValue.trim();
 
@@ -261,24 +266,20 @@ export default function LibraryMenuItems({
 
   const JSX_whenNotSearching = !IS_SEARCHING && (
     <>
+      <FlowchartStarterPalette onInsertLibraryItems={onInsertLibraryItems} />
       {!IS_LIBRARY_EMPTY && (
         <div className="library-menu-items-container__header">
           {t("labels.personalLib")}
         </div>
       )}
       {!pendingElements.length && !unpublishedItems.length ? (
-        <div className="library-menu-items__no-items">
-          {!publishedItems.length && (
-            <div className="library-menu-items__no-items__label">
-              {t("library.noItems")}
+        publishedItems.length > 0 ? (
+          <div className="library-menu-items__no-items">
+            <div className="library-menu-items__no-items__hint">
+              {t("library.hint_emptyPrivateLibrary")}
             </div>
-          )}
-          <div className="library-menu-items__no-items__hint">
-            {publishedItems.length > 0
-              ? t("library.hint_emptyPrivateLibrary")
-              : t("library.hint_emptyLibrary")}
           </div>
-        </div>
+        ) : null
       ) : (
         <LibraryMenuSectionGrid>
           {pendingElements.length > 0 && (
