@@ -1,0 +1,73 @@
+.excalidraw {
+  .excalidraw-flowchart-add-panel {
+    width: 11.5rem;
+    padding: 0.5rem;
+    border-top: 1px solid var(--default-border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    color: var(--text-primary-color);
+    font-size: 0.75rem;
+  }
+
+  .excalidraw-flowchart-add-panel__title {
+    font-weight: 600;
+    padding: 0.125rem 0.25rem;
+  }
+
+  .excalidraw-flowchart-add-panel__directions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.25rem;
+  }
+
+  .excalidraw-flowchart-add-panel__direction,
+  .excalidraw-flowchart-add-panel__shape {
+    border: 1px solid var(--default-border-color);
+    border-radius: var(--border-radius-md);
+    background: var(--island-bg-color);
+    color: var(--text-primary-color);
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .excalidraw-flowchart-add-panel__direction {
+    height: 1.75rem;
+    font-size: 1.125rem;
+    line-height: 1;
+  }
+
+  .excalidraw-flowchart-add-panel__direction:hover,
+  .excalidraw-flowchart-add-panel__direction[aria-pressed="true"],
+  .excalidraw-flowchart-add-panel__shape:hover {
+    background: var(--button-hover-bg);
+    border-color: var(--button-hover-border);
+  }
+
+  .excalidraw-flowchart-add-panel__direction:focus-visible,
+  .excalidraw-flowchart-add-panel__shape:focus-visible {
+    outline: 2px solid var(--focus-highlight-color);
+    outline-offset: 1px;
+  }
+
+  .excalidraw-flowchart-add-panel__shapes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .excalidraw-flowchart-add-panel__shape {
+    min-height: 2rem;
+    padding: 0.25rem 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .excalidraw-flowchart-add-panel__shape-icon {
+    display: inline-flex;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
