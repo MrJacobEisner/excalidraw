@@ -13,6 +13,7 @@ services:
       CHOKIDAR_USEPOLLING: "true"
       __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: "${__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS:-}"
       VITE_APP_ENABLE_ESLINT: "false"
+      VITE_APP_ENABLE_TYPECHECK: "false"
     restart: on-failure
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => { if (!r.ok || !(r.headers.get('content-type') || '').includes('text/html')) process.exit(1) }).catch(() => process.exit(1))"]
