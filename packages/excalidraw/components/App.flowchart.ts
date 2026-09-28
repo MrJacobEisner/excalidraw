@@ -33,6 +33,14 @@ type FlowchartOperation =
 export class AppFlowchart {
   private creator = new FlowChartCreator();
   private navigator = new FlowChartNavigator();
+  /**
+   * When active, bare arrow keys create a single connected node from the
+   * selected node, commit it immediately, and move selection to the new
+   * node — letting the user chain nodes by tapping arrows without holding
+   * any modifier. Activated after a normal Ctrl/Cmd+arrow creation commits;
+   * Escape or any non-arrow key exits.
+   */
+  private quickMode = false;
 
   constructor(private app: App) {}
 
@@ -44,13 +52,25 @@ export class AppFlowchart {
     return this.creator.isCreatingChart;
   }
 
+  get isQuickMode() {
+    return this.quickMode;
+  }
+
   /** ends any in-progress flowchart creation/navigation session */
   clear = () => {
     this.creator.clear();
     this.navigator.clear();
+    this.quickMode = false;
   };
 
   handleKeyEvent = (event: React.KeyboardEvent | KeyboardEvent): boolean => {
+    // Quick mode intercepts bare arrow keys to create one connected node
+    // at a time, committing immediately and keeping selection on the new
+    // node so the user can chain without holding any modifier.
+    if (this.quickMode && event.type === "keydown") {
+      return this.handleQuickModeKeydown(event);
+    }
+
     const operation = this.resolveKeyboardEventToOperation(event);
 
     switch (operation.type) {
@@ -80,10 +100,19 @@ export class AppFlowchart {
           this.app.insertNewElements(operation.nodes);
         }
 
-        const firstNode = operation.nodes[0];
-        if (firstNode) {
-          this.selectAndReveal(firstNode);
+        // Select the last created node (furthest from the original parent)
+        // so the user can continue chaining from the edge of the cluster.
+        const lastNode = [...operation.nodes]
+          .reverse()
+          .find((node) => isFlowchartNodeElement(node));
+        if (lastNode) {
+          this.selectAndReveal(lastNode);
         }
+
+        // Activate quick mode so the user can keep adding connected nodes
+        // with bare arrow keys.
+        this.quickMode = true;
+        this.app.cursorHints.show("Arrow keys to add · Esc to exit");
 
         this.captureUpdate();
         return true;
@@ -93,6 +122,66 @@ export class AppFlowchart {
         return true;
     }
   };
+
+  private handleQuickModeKeydown(
+    event: React.KeyboardEvent | KeyboardEvent,
+  ): boolean {
+    if (event.key === KEYS.ESCAPE) {
+      this.quickMode = false;
+      this.app.triggerRender(true);
+      return true;
+    }
+
+    // Any non-arrow key (or arrow with a modifier) exits quick mode and
+    // lets the event propagate to other handlers.
+    if (
+      !isArrowKey(event.key) ||
+      event[KEYS.CTRL_OR_CMD] ||
+      event.altKey ||
+      event.shiftKey
+    ) {
+      this.quickMode = false;
+      return false;
+    }
+
+    const selectedElements = getSelectedElements(
+      this.app.scene.getNonDeletedElementsMap(),
+      this.app.state,
+    );
+
+    if (
+      selectedElements.length !== 1 ||
+      !isFlowchartNodeElement(selectedElements[0])
+    ) {
+      this.quickMode = false;
+      return false;
+    }
+
+    event.preventDefault();
+
+    this.creator.createNodes(
+      selectedElements[0],
+      this.app.state,
+      AppFlowchart.getLinkDirectionFromKey(event.key),
+      this.app.scene,
+    );
+
+    const nodes = this.creator.pendingNodes ?? [];
+    this.creator.clear();
+
+    if (nodes.length) {
+      this.app.insertNewElements(nodes);
+    }
+
+    // Select the newly created node so the user can continue chaining.
+    const newNode = nodes.find((node) => isFlowchartNodeElement(node));
+    if (newNode) {
+      this.selectAndReveal(newNode);
+    }
+
+    this.captureUpdate();
+    return true;
+  }
 
   private resolveKeyboardEventToOperation(
     event: React.KeyboardEvent | KeyboardEvent,
