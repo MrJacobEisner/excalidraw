@@ -36,6 +36,7 @@ import type {
 } from "@excalidraw/element/types";
 
 import { t } from "../i18n";
+import { createDecisionBranchLabels } from "../decisionBranchLabels";
 import { done } from "../components/icons";
 import { TOGGLE_TOOLS } from "../components/Tools";
 import { IconButton } from "../components/IconButton";
@@ -56,7 +57,7 @@ export const actionFinalize = register<FormData>({
   trackEvent: false,
   perform: (elements, appState, data, app) => {
     let shouldCommit = true;
-    let newElements = elements;
+    let newElements: readonly ExcalidrawElement[] = elements;
     const { focusContainer, scene } = app;
     const elementsMap = scene.getNonDeletedElementsMap();
     const isDrawShapeTool = appState.activeTool.type === "autoshape";
@@ -165,6 +166,13 @@ export const actionFinalize = register<FormData>({
         }
 
         const activeToolLocked = appState.activeTool?.locked;
+
+        if (appState.newElement && element.points.length >= 2) {
+          newElements = [
+            ...newElements,
+            ...createDecisionBranchLabels([element], scene, appState),
+          ];
+        }
 
         return {
           elements:
@@ -387,6 +395,13 @@ export const actionFinalize = register<FormData>({
           },
         }
       : selectedLinearElement;
+
+    if (appState.newElement && !appState.newElement.isDeleted) {
+      newElements = [
+        ...newElements,
+        ...createDecisionBranchLabels([appState.newElement], scene, appState),
+      ];
+    }
 
     return {
       elements: newElements,
