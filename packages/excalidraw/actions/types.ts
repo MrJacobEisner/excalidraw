@@ -125,6 +125,7 @@ export type ActionName =
   | "unbindText"
   | "hyperlink"
   | "bindText"
+  | "numberFlowchartSteps"
   | "unlockAllElements"
   | "toggleElementLock"
   | "toggleLinearEditor"
