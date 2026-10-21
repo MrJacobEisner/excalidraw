@@ -310,6 +310,7 @@ function CommandPaletteInner({
       const elementsCommands: CommandPaletteItem[] = [
         actionManager.actions.group,
         actionManager.actions.ungroup,
+        actionManager.actions.numberFlowchartSteps,
         actionManager.actions.cut,
         actionManager.actions.copy,
         actionManager.actions.deleteSelectedElements,

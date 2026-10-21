@@ -413,6 +413,21 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
         },
       },
       {
+        "keywords": [
+          "number",
+          "flowchart",
+          "steps",
+          "renumber",
+        ],
+        "label": "labels.numberFlowchartSteps",
+        "name": "numberFlowchartSteps",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      {
         "label": "labels.bindText",
         "name": "bindText",
         "perform": [Function],
@@ -5260,6 +5275,21 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
         },
       },
       {
+        "keywords": [
+          "number",
+          "flowchart",
+          "steps",
+          "renumber",
+        ],
+        "label": "labels.numberFlowchartSteps",
+        "name": "numberFlowchartSteps",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      {
         "label": "labels.bindText",
         "name": "bindText",
         "perform": [Function],
@@ -6487,6 +6517,21 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
       {
         "label": "labels.unbindText",
         "name": "unbindText",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      {
+        "keywords": [
+          "number",
+          "flowchart",
+          "steps",
+          "renumber",
+        ],
+        "label": "labels.numberFlowchartSteps",
+        "name": "numberFlowchartSteps",
         "perform": [Function],
         "predicate": [Function],
         "trackEvent": {
@@ -8481,6 +8526,21 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       {
+        "keywords": [
+          "number",
+          "flowchart",
+          "steps",
+          "renumber",
+        ],
+        "label": "labels.numberFlowchartSteps",
+        "name": "numberFlowchartSteps",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      {
         "label": "labels.bindText",
         "name": "bindText",
         "perform": [Function],
@@ -9478,6 +9538,21 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       {
         "label": "labels.unbindText",
         "name": "unbindText",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      {
+        "keywords": [
+          "number",
+          "flowchart",
+          "steps",
+          "renumber",
+        ],
+        "label": "labels.numberFlowchartSteps",
+        "name": "numberFlowchartSteps",
         "perform": [Function],
         "predicate": [Function],
         "trackEvent": {

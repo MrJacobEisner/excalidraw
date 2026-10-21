@@ -86,6 +86,7 @@ export { actionToggleShowHints } from "./actionToggleShowHints";
 
 export { actionToggleStats } from "./actionToggleStats";
 export { actionUnbindText, actionBindText } from "./actionBoundText";
+export { actionNumberFlowchart } from "./actionNumberFlowchart";
 export { actionToggleWrap } from "./actionToggleWrap";
 export { actionLink } from "./actionLink";
 export { actionToggleElementLock } from "./actionElementLock";

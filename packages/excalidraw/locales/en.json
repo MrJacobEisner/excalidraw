@@ -147,6 +147,7 @@
     "increaseFontSize": "Increase font size",
     "unbindText": "Unbind text",
     "bindText": "Bind text to the container",
+    "numberFlowchartSteps": "Auto-number flowchart steps",
     "createContainerFromText": "Wrap text in a container",
     "link": {
       "edit": "Edit link",
