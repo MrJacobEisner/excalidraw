@@ -116,6 +116,7 @@ export type ActionName =
   | "distributeVertically"
   | "flipHorizontal"
   | "flipVertical"
+  | "cycleFlowchartShape"
   | "deselect"
   | "viewMode"
   | "exportWithDarkMode"
