@@ -15,7 +15,10 @@ import type {
   NonDeletedExcalidrawElement,
 } from "@excalidraw/element/types";
 
+import { createDecisionBranchLabels } from "../decisionBranchLabels";
+
 import type React from "react";
+
 import type App from "./App";
 import type { PendingExcalidrawElements } from "../types";
 
@@ -77,7 +80,12 @@ export class AppFlowchart {
       }
       case "committed": {
         if (operation.nodes.length) {
-          this.app.insertNewElements(operation.nodes);
+          const labels = createDecisionBranchLabels(
+            operation.nodes,
+            this.app.scene,
+            this.app.state,
+          );
+          this.app.insertNewElements([...operation.nodes, ...labels]);
         }
 
         const firstNode = operation.nodes[0];

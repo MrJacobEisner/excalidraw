@@ -1,5 +1,7 @@
 {
   "labels": {
+    "decisionBranchYes": "Yes",
+    "decisionBranchNo": "No",
     "signUp": "Sign up",
     "signIn": "Sign in",
     "upgrade": "Upgrade",
