@@ -494,6 +494,10 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               shortcuts={[getShortcutKey("Shift+H")]}
             />
             <Shortcut
+              label={t("labels.cycleFlowchartShape")}
+              shortcuts={[getShortcutFromShortcutName("cycleFlowchartShape")]}
+            />
+            <Shortcut
               label={t("labels.flipVertical")}
               shortcuts={[getShortcutKey("Shift+V")]}
             />
